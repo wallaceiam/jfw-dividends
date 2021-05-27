@@ -1,6 +1,9 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode } from "react";
 
-import Link from 'next/link';
+import Link from "next/link";
+
+import { Footer } from "../components/footer";
+import { Header } from "../components/header";
 
 // import { Config } from '../utils/Config';
 
@@ -17,15 +20,15 @@ type ILink = {
 };
 
 const links: ILink[] = [
-  { title: 'Dashboard', link: '/' },
-  { title: 'UK', link: '/uk' },
-  { title: 'US', link: '/us' },
-  { title: 'EU', link: '/eu' },
+  { title: "Dashboard", link: "/" },
+  { title: "UK", link: "/uk" },
+  { title: "US", link: "/us" },
+  { title: "EU", link: "/eu" },
 ];
 
-const Main = (props: IMainProps) => (
+const Main = ({ title, link, children, meta }: IMainProps) => (
   <div className="min-h-screen bg-gray-100">
-    {props.meta}
+    {meta}
     <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -44,14 +47,15 @@ const Main = (props: IMainProps) => (
             </div>
             <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
               {links.map((l) => {
-                const classes = l.link === props.link
-                  ? 'border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium';
+                const classes =
+                  l.link === link
+                    ? "border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium";
                 return (
                   <Link key={l.link} href={l.link} passHref>
                     <a
                       className={classes}
-                      aria-current={l.link === props.link ? 'page' : undefined}
+                      aria-current={l.link === link ? "page" : undefined}
                     >
                       {l.title}
                     </a>
@@ -206,12 +210,16 @@ const Main = (props: IMainProps) => (
       <div className="sm:hidden" id="mobile-menu">
         <div className="pt-2 pb-3 space-y-1">
           {links.map((l) => {
-            const classes = l.link === props.link
-              ? 'bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium'
-              : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium';
+            const classes =
+              l.link === link
+                ? "bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium";
             return (
               <Link key={l.link} href={l.link} passHref>
-                <a className={classes} aria-current={l.link === props.link ? 'page' : undefined}>
+                <a
+                  className={classes}
+                  aria-current={l.link === link ? "page" : undefined}
+                >
                   {l.title}
                 </a>
               </Link>
@@ -228,8 +236,12 @@ const Main = (props: IMainProps) => (
               />
             </div>
             <div className="ml-3">
-              <div className="text-base font-medium text-gray-800">Tom Cook</div>
-              <div className="text-sm font-medium text-gray-500">tom@example.com</div>
+              <div className="text-base font-medium text-gray-800">
+                Tom Cook
+              </div>
+              <div className="text-sm font-medium text-gray-500">
+                tom@example.com
+              </div>
             </div>
             <button
               type="button"
@@ -280,20 +292,15 @@ const Main = (props: IMainProps) => (
       </div>
     </nav>
     <div className="py-10">
-      <header>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold leading-tight text-gray-900">{props.title}</h1>
-        </div>
-      </header>
+      <Header>{title}</Header>
       <main>
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <div className="px-4 py-8 sm:px-0">
-            <div className="rounded-lg h-96">
-              {props.children}
-            </div>
+            <div className="rounded-lg">{children}</div>
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   </div>
 );

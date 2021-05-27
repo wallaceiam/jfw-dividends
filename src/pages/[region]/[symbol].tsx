@@ -3,7 +3,7 @@ import React from 'react';
 import * as accounting from 'accounting';
 import { format } from 'date-fns';
 
-import TH from '../../components/th';
+import { TH } from '../../components/table';
 import { Meta } from '../../layout/Meta';
 import { IDividend, IDividendMax, map } from '../../models/dividend';
 import { Main } from '../../templates/New';
@@ -16,6 +16,8 @@ type ISymbolProps = {
 
 const Symbol = ({ symbol, region, dividends }: ISymbolProps) => {
   const meta = <Meta title={symbol} description="2" />;
+  const sym = symbol.toUpperCase();
+  const reg = region.toUpperCase();
 
   const sorted = dividends.sort((a, b) => {
     if (a.exDividendDate - b.exDividendDate === 0) {
@@ -25,7 +27,7 @@ const Symbol = ({ symbol, region, dividends }: ISymbolProps) => {
   });
 
   return (
-    <Main meta={meta} title={symbol} link={`/${region}/${symbol}/`}>
+    <Main meta={meta} title={sym} link={`/${region}/${symbol}/`}>
       <div className="flex flex-col">
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -92,7 +94,7 @@ export const getStaticProps = async ({ params }: any) => {
   const id = region === 'uk' ? 1 : 2;
   const res = await fetch(`https://www.dividendmax.com/dividends/declared.json?region=${id}`);
   const data: IDividendMax[] = await res.json();
-  const dividends = data.filter((d) => d.ticker === symbol).map((d) => map(d));
+  const dividends = data.filter((d) => d.ticker.toLowerCase() === symbol).map((d, i) => map(d, i));
 
   return {
     props: {
@@ -116,7 +118,7 @@ export const getStaticPaths = async () => {
     const res = await fetch(`https://www.dividendmax.com/dividends/declared.json?region=${id}`);
     // eslint-disable-next-line no-await-in-loop
     const data: IDividendMax[] = await res.json();
-    const dividends = data.map((d) => map(d));
+    const dividends = data.map((d, i) => map(d, i));
 
     // Get the paths we want to pre-render based on posts
     dividends.forEach((d) => {

@@ -15,6 +15,7 @@ export interface IDividendMax {
 }
 
 export interface IDividend {
+  readonly id: number;
   readonly name: string;
   readonly ticker: string;
   readonly flag: string;
@@ -28,7 +29,7 @@ export interface IDividend {
   readonly path: string;
 }
 
-export const map = (dvd: IDividendMax): IDividend => {
+export const map = (dvd: IDividendMax, id: number): IDividend => {
   const ccy = dvd.price.startsWith('£') ? 'GBP' : 'USD';
   const price = accounting.unformat(dvd.price);
   const nextAmount = accounting.unformat(dvd.amnt) / 100;
@@ -37,6 +38,7 @@ export const map = (dvd: IDividendMax): IDividend => {
   const dividendYield = (nextAmount + previousAmount) / price;
 
   return {
+    id,
     name: dvd.name,
     ticker: dvd.ticker,
     flag: dvd.flag,
