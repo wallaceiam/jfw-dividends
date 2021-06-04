@@ -1,12 +1,13 @@
-import React from 'react';
+import React from "react";
 
-import * as accounting from 'accounting';
-import { format } from 'date-fns';
+import * as accounting from "accounting";
+import { format } from "date-fns";
 
-import { TH } from '../../components/table';
-import { Meta } from '../../layout/Meta';
-import { IDividend, IDividendMax, map } from '../../models/dividend';
-import { Main } from '../../templates/New';
+import { TH } from "../../components/table";
+import { Meta } from "../../layout/Meta";
+import { IDividend } from "../../models/dividend";
+import { Main } from "../../templates/New";
+import { getDataService } from "../../services/idataservice";
 
 type ISymbolProps = {
   readonly symbol: string;
@@ -17,7 +18,6 @@ type ISymbolProps = {
 const Symbol = ({ symbol, region, dividends }: ISymbolProps) => {
   const meta = <Meta title={symbol} description="2" />;
   const sym = symbol.toUpperCase();
-  const reg = region.toUpperCase();
 
   const sorted = dividends.sort((a, b) => {
     if (a.exDividendDate - b.exDividendDate === 0) {
@@ -47,17 +47,26 @@ const Symbol = ({ symbol, region, dividends }: ISymbolProps) => {
                     <tr key={`${d.exDividendDate}-${d.market}-${d.ticker}`}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          <a href="#" className="text-indigo-600 hover:text-indigo-900">
+                          <a
+                            href="#"
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
                             {d.name}
                           </a>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10">{d.flag}</div>
+                          <div className="flex-shrink-0 h-10 w-10">
+                            {d.flag}
+                          </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{d.ticker}</div>
-                            <div className="text-sm text-gray-500">{d.market}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {d.ticker}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {d.market}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -75,7 +84,7 @@ const Symbol = ({ symbol, region, dividends }: ISymbolProps) => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {format(d.exDividendDate, 'EE MMM dd yyyy')}
+                        {format(d.exDividendDate, "EE MMM dd yyyy")}
                       </td>
                     </tr>
                   ))}
@@ -91,10 +100,11 @@ const Symbol = ({ symbol, region, dividends }: ISymbolProps) => {
 
 export const getStaticProps = async ({ params }: any) => {
   const { region, symbol } = params;
-  const id = region === 'uk' ? 1 : 2;
-  const res = await fetch(`https://www.dividendmax.com/dividends/declared.json?region=${id}`);
-  const data: IDividendMax[] = await res.json();
-  const dividends = data.filter((d) => d.ticker.toLowerCase() === symbol).map((d, i) => map(d, i));
+
+  const dataService = getDataService();
+  const data = await dataService.getDataForRegion(region);
+  const dividends = data
+    .filter((d) => d.ticker.toLowerCase() === symbol);
 
   return {
     props: {
@@ -106,32 +116,27 @@ export const getStaticProps = async ({ params }: any) => {
 };
 
 export const getStaticPaths = async () => {
-  const regions = ['uk', 'us', 'eu'];
+  const regions = ["uk", "us", "eu"];
 
-  // Get the paths we want to pre-render based on posts
-  const paths: any[] = [];
-  // eslint-disable-next-line no-restricted-syntax
-  for (const region of regions) {
-    // eslint-disable-next-line no-nested-ternary
-    const id = region === 'uk' ? 1 : (region === 'us' ? 6 : 7);
-    // eslint-disable-next-line no-await-in-loop
-    const res = await fetch(`https://www.dividendmax.com/dividends/declared.json?region=${id}`);
-    // eslint-disable-next-line no-await-in-loop
-    const data: IDividendMax[] = await res.json();
-    const dividends = data.map((d, i) => map(d, i));
+  const dataService = getDataService();
 
-    // Get the paths we want to pre-render based on posts
-    dividends.forEach((d) => {
-      paths.push({
-        params: { symbol: d.ticker, region },
-      });
-    });
-  }
+  const data = regions.map(async (r) => {
+    const dividends = await dataService.getDataForRegion(r);
+
+    return dividends.map((d) => ({
+      params: { symbol: d.ticker, region: r },
+    }));
+  });
+
+  const pathOfPaths = await Promise.all(data);
+
+  const paths = Array.prototype.concat.apply([], pathOfPaths);
+
 
   // We'll pre-render only these paths at build time.
   // { fallback: blocking } will server-render pages
   // on-demand if the path doesn't exist.
-  return { paths, fallback: 'blocking' };
+  return { paths, fallback: false };
 };
 
 export default Symbol;
